@@ -1,0 +1,145 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.0
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Tempo de geração: 19-Abr-2023 às 20:54
+-- Versão do servidor: 10.4.24-MariaDB
+-- versão do PHP: 8.1.6
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Banco de dados: `receitas`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `login`
+--
+
+CREATE TABLE `login` (
+  `id_login` int(11) NOT NULL,
+  `email` text NOT NULL,
+  `senha` text NOT NULL,
+  `nome` text NOT NULL,
+  `tipoUsuario` int(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Extraindo dados da tabela `login`
+--
+
+INSERT INTO `login` (`id_login`, `email`, `senha`, `nome`, `tipoUsuario`) VALUES
+(1, 'jose@jose.com.br', '12345', 'jose carmino', 0),
+(2, 'josecarmino@jose.com.bt', '12345', 'antonio maria', 0),
+(3, 'algomo@almo.com.br', '12345', 'Almo contim', 0),
+(5, 'joaodasilva@meusite.com', '$2a$10$mxyxGhcM/NtIhgxEvE7L9eHfZrRtIYV.OBF5Leu/oFZpYzvkRzoUy', 'joao da silva ', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `receita`
+--
+
+CREATE TABLE `receita` (
+  `id_receita` int(11) NOT NULL,
+  `nome` text NOT NULL,
+  `id_tipocomida` int(11) NOT NULL,
+  `ingredientes` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Extraindo dados da tabela `receita`
+--
+
+INSERT INTO `receita` (`id_receita`, `nome`, `id_tipocomida`, `ingredientes`) VALUES
+(3, 'Bolo de chocolate', 2, ' 1 colher de ....');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `tipocomida`
+--
+
+CREATE TABLE `tipocomida` (
+  `id_tipocomida` int(11) NOT NULL,
+  `nome` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Extraindo dados da tabela `tipocomida`
+--
+
+INSERT INTO `tipocomida` (`id_tipocomida`, `nome`) VALUES
+(2, 'bolos');
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices para tabela `login`
+--
+ALTER TABLE `login`
+  ADD PRIMARY KEY (`id_login`),
+  ADD UNIQUE KEY `emailLogin` (`email`) USING HASH;
+
+--
+-- Índices para tabela `receita`
+--
+ALTER TABLE `receita`
+  ADD PRIMARY KEY (`id_receita`),
+  ADD KEY `fk_receita_tiocomida` (`id_tipocomida`);
+
+--
+-- Índices para tabela `tipocomida`
+--
+ALTER TABLE `tipocomida`
+  ADD PRIMARY KEY (`id_tipocomida`) USING BTREE;
+
+--
+-- AUTO_INCREMENT de tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `login`
+--
+ALTER TABLE `login`
+  MODIFY `id_login` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de tabela `receita`
+--
+ALTER TABLE `receita`
+  MODIFY `id_receita` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `tipocomida`
+--
+ALTER TABLE `tipocomida`
+  MODIFY `id_tipocomida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Restrições para despejos de tabelas
+--
+
+--
+-- Limitadores para a tabela `receita`
+--
+ALTER TABLE `receita`
+  ADD CONSTRAINT `fk_receita_tiocomida` FOREIGN KEY (`id_tipocomida`) REFERENCES `tipocomida` (`id_tipocomida`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

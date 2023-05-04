@@ -2,11 +2,14 @@ import express from "express";
 import pool from "../pool.js";
 import bcrypt from "bcryptjs";
 import verificaJWT from "../validador.js";
-
+import VerificarSenha from "../routes/validarSenha.js";
 
 const routes = express.Router();
 
-routes.get("/login", verificaJWT, (req, res, error) => {
+routes.get("/login", (req, res, error) => {
+  if (!VerificarSenha(req.path, req.headers["email"], req.headers["senha"])) {
+    res.status(401).end()
+  }
   const sql = "SELECT * FROM login";
   pool.query(sql, (error, results, fields) => {
     MensagensLogin(error, results, res);
@@ -14,6 +17,9 @@ routes.get("/login", verificaJWT, (req, res, error) => {
 });
 
 routes.get("/login/:id", verificaJWT, (req, res, error) => {
+  if (!VerificarSenha(req.path, req.headers["email"], req.headers["senha"])) {
+    res.status(401).end()
+  }
   const sql = "SELECT * FROM login WHERE login.id_login=" + req.params.id;
   pool.query(sql, (error, results, fields) => {
     MensagensLogin(error, results, res);
@@ -28,25 +34,31 @@ routes.get("/login/email/:email", (req, res, error) => {
 });
 
 routes.get("/autenticar", (req, res, error) => {
-  const email = req.headers["email"]
-  const senha = req.headers["senha"]
-  const sql = "SELECT * FROM login WHERE login.email=?";;
+  //const email = req.headers["email"]
+  //const senha = req.headers["senha"]
+  const { email, senha } = req.body;
+
+  const sql = "SELECT * FROM login WHERE login.email=?";
   pool.query(sql, [email], (error, results, fields) => {
-    if(results.length > 0){
-      console.log(results[0].email, results[0].senha)
-      if( email === results[0].email && bcrypt.compareSync(senha, results[0].senha)){
-        res.status(200).end();
+    if (results.length > 0) {
+      console.log(results[0].email, results[0].senha);
+      if (
+        email === results[0].email &&
+        bcrypt.compareSync(senha, results[0].senha)
+      ) {
+        res.status(200).json({ login: true, token }).end();
       } else {
         res.send(401).end();
       }
     }
   });
-})
+});
 
 routes.post("/login", (req, res, error) => {
-  const sql = "INSERT INTO login( email, senha, nome, tipoUsuario ) VALUES(?,?,?,?)";
+  const sql =
+    "INSERT INTO login( email, senha, nome, tipoUsuario ) VALUES(?,?,?,?)";
   const { email, nome, tipoUsuario } = req.body;
-  const senha =  bcrypt.hashSync(req.body.senha); 
+  const senha = bcrypt.hashSync(req.body.senha);
   pool.query(
     sql,
     [email, senha, nome, tipoUsuario],
@@ -57,7 +69,8 @@ routes.post("/login", (req, res, error) => {
 });
 
 routes.put("/login", (req, res, error) => {
-  const sql = "UPDATE login SET email=?, senha=?, nome=?, tipoUsuario=?  WHERE id_login=?";
+  const sql =
+    "UPDATE login SET email=?, senha=?, nome=?, tipoUsuario=?  WHERE id_login=?";
   const { email, senha, nome, tipoUsuario, id_login } = req.body;
   pool.query(
     sql,
@@ -69,7 +82,8 @@ routes.put("/login", (req, res, error) => {
 });
 
 routes.put("/login/id/:id", (req, res, error) => {
-  const sql = "UPDATE login SET email=?, senha=?, nome=?, tipoUsuario=?  WHERE id_login=?";
+  const sql =
+    "UPDATE login SET email=?, senha=?, nome=?, tipoUsuario=?  WHERE id_login=?";
   const { email, senha, nome, tipoUsuario } = req.body;
   const id_login = req.params.id;
   pool.query(
@@ -91,12 +105,12 @@ routes.delete("/login/:id", (req, res, error) => {
 
 function MensagensLogin(error, results, res) {
   //if (results.length > 0) {
-    if (!error) {
-      res.status(200).json(results);
-    } else {
-      console.log(error);
-      res.status(404).json({ msg: error });
-    }
+  if (!error) {
+    res.status(200).json(results);
+  } else {
+    console.log(error);
+    res.status(404).json({ msg: error });
+  }
   //} else {
   //  res.status(404).json({ msg: "sem dados" });
   //}

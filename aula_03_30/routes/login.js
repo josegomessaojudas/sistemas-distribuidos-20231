@@ -7,18 +7,20 @@ import VerificarSenha from "../routes/validarSenha.js";
 const routes = express.Router();
 
 routes.get("/login", (req, res, error) => {
-  if (!VerificarSenha(req.path, req.headers["email"], req.headers["senha"])) {
-    res.status(401).end()
+  const { email, senha } = req.body;
+  if (VerificarSenha(req.path, email, senha)) {
+    const sql = "SELECT * FROM login";
+    pool.query(sql, (error, results, fields) => {
+      MensagensLogin(error, results, res);
+    });
+  } else {
+    res.status(401).end();
   }
-  const sql = "SELECT * FROM login";
-  pool.query(sql, (error, results, fields) => {
-    MensagensLogin(error, results, res);
-  });
 });
 
 routes.get("/login/:id", verificaJWT, (req, res, error) => {
   if (!VerificarSenha(req.path, req.headers["email"], req.headers["senha"])) {
-    res.status(401).end()
+    res.status(401).end();
   }
   const sql = "SELECT * FROM login WHERE login.id_login=" + req.params.id;
   pool.query(sql, (error, results, fields) => {
@@ -34,14 +36,10 @@ routes.get("/login/email/:email", (req, res, error) => {
 });
 
 routes.get("/autenticar", (req, res, error) => {
-  //const email = req.headers["email"]
-  //const senha = req.headers["senha"]
   const { email, senha } = req.body;
-
   const sql = "SELECT * FROM login WHERE login.email=?";
   pool.query(sql, [email], (error, results, fields) => {
     if (results.length > 0) {
-      console.log(results[0].email, results[0].senha);
       if (
         email === results[0].email &&
         bcrypt.compareSync(senha, results[0].senha)
@@ -104,16 +102,16 @@ routes.delete("/login/:id", (req, res, error) => {
 });
 
 function MensagensLogin(error, results, res) {
-  //if (results.length > 0) {
-  if (!error) {
-    res.status(200).json(results);
+  if (results.length > 0) {
+    if (!error) {
+      res.status(200).json(results);
+    } else {
+      console.log(error);
+      res.status(404).json({ msg: error });
+    }
   } else {
-    console.log(error);
-    res.status(404).json({ msg: error });
+    res.status(404).json({ msg: "sem dados" });
   }
-  //} else {
-  //  res.status(404).json({ msg: "sem dados" });
-  //}
 }
 
 export default routes;
